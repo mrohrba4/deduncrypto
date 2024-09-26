@@ -4,11 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import LandingScreen from '../screens/LandingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
+import SignedInScreen from '../screens/SignedInScreen';
 
 type RootStackParamList = {
     Landing: undefined;
     Login: undefined;
     Signup: undefined;
+    SignIn: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -20,6 +22,7 @@ const AppNavigator: React.FC = () => {
                 <Stack.Screen name="Landing" component={LandingScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Signup" component={SignupScreen} />
+                <Stack.Screen name="SignIn" component={SignedInScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     )

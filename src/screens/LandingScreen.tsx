@@ -1,12 +1,9 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from 'react-native-screens/lib/typescript/native-stack/types';
+import { RootStackParamList } from '../types';
 
-type RootStackParamList = {
-    Landing: undefined;
-    Login: undefined;
-    Signup: undefined;
-};
+
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Landing'>;
 
