@@ -22,7 +22,7 @@ const AppNavigator: React.FC = () => {
                 <Stack.Screen name="Landing" component={LandingScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Signup" component={SignupScreen} />
-                <Stack.Screen name="SignIn" component={SignedInScreen} />
+                <Stack.Screen name="SignedIn" component={SignedInScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     )

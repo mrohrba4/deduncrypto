@@ -33,7 +33,7 @@ export const login = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     await storeData(userCredential.user.uid);
-    return userCredential;
+    return userCredential.user;
   } catch (error) {
     const firebaseError = error as FirebaseError;
     console.error('Error Logging In:', firebaseError.message);

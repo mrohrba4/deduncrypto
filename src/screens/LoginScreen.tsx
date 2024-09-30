@@ -20,12 +20,18 @@ interface FirebaseError extends Error {
 
     const handleLogin = async () => {
         try {
-            await login(email, password);
-            setError('');
-            navigation.navigate('SignIn');
+            const user = await login(email, password);
+            
+            if (user && user.email) {
+                const userEmail = user.email;
+                navigation.navigate('SignedIn', { email: userEmail });
+            } else {
+                throw new Error("Login Failed: User email not available.");
+            }
         } catch (error) {
             const firebaseError = error as FirebaseError;
             setError(firebaseError.message);
+            console.error('Login error:', firebaseError.message); // Log the error for debugging
         }
     };
 

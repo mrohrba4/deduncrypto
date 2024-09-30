@@ -5,10 +5,20 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { deleteAccount, changePassword } from '../services/authService';
 
+interface SignedInScreenProps {
+    route: {
+        params: {
+            email: string;
+        };
+    };
+}
 
-const SignedInScreen: React.FC = () => {
+
+const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const [newPassword, setNewPassword] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const { email } = route.params;
 
     const handleLogout = () => {
         // Logout functions here.
@@ -56,10 +66,15 @@ const SignedInScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
+            {/* Welcome message */}
             <Text style={styles.title}>Welcome!</Text>
-            <Text style={styles.message}>You are now signed in.</Text>
-            <Button title="Logout" onPress={handleLogout} />
-            <Button title="Delete Account" onPress={handleDeleteAccount} color="red" />
+            <Text style={styles.message}>{email}</Text>
+
+            {/* User Functions */}
+            <View>
+                <Button title="Logout" onPress={handleLogout} />
+                <Button title="Delete Account" onPress={handleDeleteAccount} color="red" />
+            </View>
 
             <TextInput
                 placeholder="Enter new password"
@@ -69,6 +84,24 @@ const SignedInScreen: React.FC = () => {
                 style={styles.input}
             />
             <Button title="Change Password" onPress={handleChangePassword} color="blue" />
+
+            {/* Portfolio chart section */}
+            <View style={styles.chartPlaceholder}>
+                <Text>Portfolio Chart Placeholder</Text>
+            </View>
+
+            {/* Search bar */}
+            <TextInput
+                placeholder="Search for Crypocurrencies"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.input}
+            />
+
+            {/* Assets List section */}
+            <View style={styles.assetsPlaceholder}>
+                <Text>Assets List Placeholder</Text>
+            </View>
         </View>
     )
 }
@@ -82,6 +115,21 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#ccc',
         marginBottom: 15
+    },
+    chartPlaceholder: {
+        width: '100%',
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    assetsPlaceholder: {
+        width: '100%',
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        alignItems: 'center',
     }
 });
 export default SignedInScreen;
