@@ -24,7 +24,7 @@ interface FirebaseError extends Error {
             
             if (user && user.email) {
                 const userEmail = user.email;
-                navigation.navigate('SignedIn', { email: userEmail });
+                navigation.navigate('SignIn', { email: userEmail });
             } else {
                 throw new Error("Login Failed: User email not available.");
             }
