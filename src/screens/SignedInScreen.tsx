@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Button, TextInput, FlatList, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
-import { fetchCoinData } from '../services/coinGeckoService';
+import { fetchMultipleCoinsData } from '../services/coinGeckoService';
+import { LineChart } from 'react-native-chart-kit';
 
 interface SignedInScreenProps {
     route: {
@@ -13,25 +14,35 @@ interface SignedInScreenProps {
     };
 }
 
+const screenWidth = Dimensions.get('window').width;
+
+const transformDataForChart = (coinData: any) => {
+    return Object.keys(coinData).map(coin => ({
+        name: coin.charAt(0).toUpperCase() + coin.slice(1),
+        price: coinData[coin].usd,
+    }));
+};
+
 const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const [searchQuery, setSearchQuery] = useState('');
     const { email } = route.params;
 
     // State to store coin data
-    const [coinData, setCoinData] = useState<any>(null); // You can refine the type based on the API response
+    const [coinData, setCoinData] = useState<{ name: string; price: number }[]>([]); // You can refine the type based on the API response
 
     // Fetch coin data on component mount
     useEffect(() => {
-        const loadCoinData = async () => {
+        const loadMultipleCoinsData = async () => {
             try {
-                const data = await fetchCoinData('bitcoin');
-                setCoinData(data);
+                const data = await fetchMultipleCoinsData(['bitcoin', 'ethereum', 'litecoin']);
+                const transformedData = transformDataForChart(data)
+                setCoinData(transformedData);
             } catch (error) {
                 console.error('Error fetching coin data:', error);
             }
         };
-        loadCoinData();
+        loadMultipleCoinsData();
     }, []);
 
     return (
@@ -46,19 +57,38 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
             </View>
 
             {/* Portfolio chart section */}
-            <View style={styles.chartPlaceholder}>
-                <Text>Portfolio Chart Placeholder</Text>
-            </View>
 
             {/* Show coin data */}
-            {coinData ? (
-                <View style={styles.coinInfo}>
-                    <Text>Bitcoin Price: ${coinData.usd}</Text>
-                    <Text>Market Cap: ${coinData.usd_market_cap}</Text>
-                    <Text>24h Volume: ${coinData.usd_24h_vol}</Text>
-                    <Text>24h Change: {coinData.usd_24h_change}%</Text>
-                    <Text>Last Updated: {new Date(coinData.last_updated_at * 1000).toLocaleString()}</Text>
-                </View>
+            {coinData.length > 0 ? (
+                <LineChart
+                data={{
+                    labels: coinData.map(coin => coin.name), // Labels for each coin
+                    datasets: [
+                        {
+                            data: coinData.map(coin => coin.price), // Data for each coin's price
+                        },
+                    ],
+                }}
+                width={screenWidth - 40} // from react-native
+                height={220}
+                yAxisLabel="$"
+                chartConfig={{
+                    backgroundColor: '#000',
+                    backgroundGradientFrom: '#1E2923',
+                    backgroundGradientTo: '#08130D',
+                    decimalPlaces: 2,
+                    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    style: {
+                        borderRadius: 16,
+                    },
+                }}
+                bezier
+                style={{
+                    marginVertical: 8,
+                    borderRadius: 16,
+                }}
+            />
             ) : (
                 <Text>Loading coin data...</Text>
             )}
@@ -77,10 +107,10 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
                 {/* You could render a list of assets here */}
                 {coinData && (
                     <FlatList
-                        data={[{ id: 'bitcoin', ...coinData}]} // You could pass more coins here in the future
-                        keyExtractor={(item) => item.id}
+                        data={coinData} // You could pass more coins here in the future
+                        keyExtractor={(item, index) => `${item.name}-${index}`}
                         renderItem={({ item }) => (
-                            <Text>{item.id}: ${item.usd}</Text>
+                            <Text>{item.name}: ${item.price}</Text>
                         )}
                     />
                 )}
