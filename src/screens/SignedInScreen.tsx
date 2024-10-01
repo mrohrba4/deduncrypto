@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Button, TextInput, FlatList, Dimensions, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
@@ -52,10 +52,9 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
             <Text style={styles.message}>{email}</Text>
 
             {/* User Functions */}
-            <View>
-                <Button title="Account" onPress={() => navigation.navigate('Account')} />
-            </View>
-
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Account')}>
+                <Text style={styles.buttonText}>Account</Text>
+            </TouchableOpacity>
             {/* Portfolio chart section */}
 
             {/* Show coin data */}
@@ -74,43 +73,46 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
                 yAxisLabel="$"
                 chartConfig={{
                     backgroundColor: '#000',
-                    backgroundGradientFrom: '#1E2923',
-                    backgroundGradientTo: '#08130D',
+                    backgroundGradientFrom: '#001226',
+                    backgroundGradientTo: '#000000',
                     decimalPlaces: 2,
-                    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+                    color: (opacity = 1) => `rgba(0, 92, 191, ${opacity})`,
                     labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                     style: {
                         borderRadius: 16,
+                        paddingLeft: 20,
+                        marginLeft: 20,
                     },
                 }}
                 bezier
                 style={{
                     marginVertical: 8,
                     borderRadius: 16,
+                    padding: 15,
                 }}
             />
             ) : (
                 <Text>Loading coin data...</Text>
             )}
-
             {/* Search bar */}
             <TextInput
                 placeholder="Search for Cryptocurrencies"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={styles.input}
+                placeholderTextColor="#888"
             />
 
             {/* Assets List section */}
             <View style={styles.assetsPlaceholder}>
-                <Text>Assets List Placeholder</Text>
+                <Text style={styles.assetsText}>Assets List Placeholder</Text>
                 {/* You could render a list of assets here */}
                 {coinData && (
                     <FlatList
                         data={coinData} // You could pass more coins here in the future
                         keyExtractor={(item, index) => `${item.name}-${index}`}
                         renderItem={({ item }) => (
-                            <Text>{item.name}: ${item.price}</Text>
+                            <Text style={styles.assetsText}>{item.name}: ${item.price}</Text>
                         )}
                     />
                 )}
@@ -120,21 +122,38 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-    title: { fontSize: 24, marginBottom: 20 },
-    message: { fontSize: 18, marginBottom: 20 },
+    container: { 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        padding: 20,
+        backgroundColor: '#000000',
+    },
+    title: { 
+        fontSize: 24, 
+        marginBottom: 20,
+        color: '#ffffff', 
+    },
+    message: { 
+        fontSize: 18, 
+        marginBottom: 20,
+        color: '#cfcfcf',
+    },
     input: {  
         width: '80%',
         padding: 10,
         borderBottomWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#333',
+        backgroundColor: '#1e1e1e',
+        color: 'ffffff',
         marginBottom: 15
     },
     chartPlaceholder: {
         width: '100%',
         padding: 20,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#333',
+        backgroundColor: '#1e1e1e',
         marginBottom: 20,
         alignItems: 'center',
     },
@@ -142,18 +161,35 @@ const styles = StyleSheet.create({
         width: '100%',
         padding: 20,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#333',
+        backgroundColor: '#1e1e1e',
+        color: '#ffffff',
         alignItems: 'center',
+    },
+    assetsText: {
+        color: '#ffffff',
+        fontSize: 16,
     },
     coinInfo: {
         marginVertical: 20,
         padding: 15,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#333',
         borderRadius: 10,
         width: '90%',
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#1e1e1e',
+        color: '#ffffff',
     },
+    button: {
+        backgroundColor: 'rgba(30, 144, 255, 0.2)',
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+    },
+    buttonText: {
+        color: '#ffffff',
+        textAlign: 'center',
+    }
 });
 
 export default SignedInScreen;
