@@ -6,6 +6,7 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import SignedInScreen from '../screens/SignedInScreen';
 import AccountScreen from '../screens/AccountScreen';
+import SearchResultScreen from '../screens/SearchResultScreen';
 
 type RootStackParamList = {
     Landing: undefined;
@@ -25,6 +26,7 @@ const AppNavigator: React.FC = () => {
                 <Stack.Screen name="Signup" component={SignupScreen} />
                 <Stack.Screen name="SignIn" component={SignedInScreen} />
                 <Stack.Screen name="Account" component={AccountScreen} />
+                <Stack.Screen name="SearchResult" component={SearchResultScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     )

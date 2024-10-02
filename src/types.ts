@@ -6,4 +6,5 @@ export type RootStackParamList = {
     Signup: undefined;
     SignIn: { email: string };
     Account: undefined;
+    SearchResult: { query: string };
 };

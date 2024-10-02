@@ -28,6 +28,10 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const { email } = route.params;
 
+    const handleSearch = (query: string) => {
+        navigation.navigate('SearchResult', { query })
+    };
+
     // State to store coin data
     const [coinData, setCoinData] = useState<{ name: string; price: number }[]>([]); // You can refine the type based on the API response
 
@@ -95,9 +99,11 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
                 <Text>Loading coin data...</Text>
             )}
             {/* Search bar */}
+            <Text style={styles.message}>Search currencies here:</Text>
             <TextInput
                 placeholder="Search for Cryptocurrencies"
                 value={searchQuery}
+                onSubmitEditing={(event) => handleSearch(event.nativeEvent.text)}
                 onChangeText={setSearchQuery}
                 style={styles.input}
                 placeholderTextColor="#888"
@@ -145,7 +151,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#333',
         backgroundColor: '#1e1e1e',
-        color: 'ffffff',
+        color: '#ffffff',
         marginBottom: 15
     },
     chartPlaceholder: {
