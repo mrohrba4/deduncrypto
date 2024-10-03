@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, FlatList, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
 import { fetchMultipleCoinsData } from '../services/coinGeckoService';
 import { LineChart } from 'react-native-chart-kit';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface SignedInScreenProps {
     route: {
@@ -28,12 +29,17 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const { email } = route.params;
 
+    // Buy/sell states
+    const [selectedCoin, setSelectedCoin] = useState<string | null>(null);
+    const [transactionAmount, setTransactionAmount] = useState<number>(0);
+    const [balance, setBalance] = useState<number>(10000);
+    const [coinData, setCoinData] = useState<{ name: string; price: number }[]>([]);
+    const [portfolio, setPortfolio] = useState<{ name: string; amount: number }[]>([]);
+
     const handleSearch = (query: string) => {
         navigation.navigate('SearchResult', { query })
     };
 
-    // State to store coin data
-    const [coinData, setCoinData] = useState<{ name: string; price: number }[]>([]); // You can refine the type based on the API response
 
     // Fetch coin data on component mount
     useEffect(() => {
@@ -49,8 +55,49 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
         loadMultipleCoinsData();
     }, []);
 
+    // Buying logic
+    const handleBuy = () => {
+        if (selectedCoin && transactionAmount > 0) {
+            const coinPrice = coinData.find(coin => coin.name.toLowerCase() === selectedCoin.toLowerCase())?.price;
+            if (coinPrice && balance >= transactionAmount * coinPrice) {
+                setBalance(prevBalance => prevBalance -transactionAmount * coinPrice);
+                setPortfolio(prevPortfolio => {
+                    const existingAsset = prevPortfolio.find(asset => asset.name === selectedCoin);
+                    if (existingAsset) {
+                        return prevPortfolio.map(asset =>
+                            asset.name === selectedCoin
+                                ? { ... asset, amount: asset.amount + transactionAmount }
+                                : asset
+                        );
+                    }
+                    return [...prevPortfolio, { name: selectedCoin, amount: transactionAmount }];
+                });
+                setTransactionAmount(0);
+            }
+        }
+    };
+
+    // Selling logic
+    const handleSell = () => {
+        if (selectedCoin && transactionAmount > 0) {
+            const existingAsset = portfolio.find(asset => asset.name === selectedCoin);
+            const coinPrice = coinData.find(coin => coin.name.toLowerCase() === selectedCoin.toLowerCase())?.price;
+            if (existingAsset && coinPrice && existingAsset.amount >= transactionAmount) {
+                setBalance(prevBalance => prevBalance + transactionAmount * coinPrice);
+                setPortfolio(prevPortfolio =>
+                    prevPortfolio.map(asset =>
+                        asset.name === selectedCoin
+                            ? { ...asset, amount: asset.amount - transactionAmount }
+                            : asset
+                    )
+                );
+                setTransactionAmount(0);
+            }
+        }
+    };
+
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             {/* Welcome message */}
             <Text style={styles.title}>Welcome!</Text>
             <Text style={styles.message}>{email}</Text>
@@ -59,7 +106,60 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Account')}>
                 <Text style={styles.buttonText}>Account</Text>
             </TouchableOpacity>
-            {/* Portfolio chart section */}
+
+            {/* Balance display */}
+            <Text style={styles.balanceText}>Balance: ${balance.toFixed(2)}</Text>
+            
+            {/* Buy/Sell section */}
+            <Text style={styles.sectionTitle}>Buy/Sell Cryptocurrencies</Text>
+
+            {/* Coin Selection */}
+            <TextInput
+                placeholder="Enter Coin (e.g., Bitcoin)"
+                value={selectedCoin || ''}
+                onChangeText={setSelectedCoin}
+                style={styles.input}
+                placeholderTextColor="#888"
+            />
+
+            {/* Transaction Amount */}
+            <TextInput
+                placeholder="Enter Amount"
+                keyboardType="numeric"
+                value={transactionAmount.toString()}
+                onChangeText={text => setTransactionAmount(Number(text))}
+                style={styles.input}
+                placeholderTextColor="#888"
+            />
+
+            {/* Buy/Sell Buttons */}
+            <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={[styles.button, styles.buyButton]} onPress={handleBuy}>
+                        <Text style={styles.buttonText}>Buy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.button, styles.sellButton]} onPress={handleSell}>
+                        <Text style={styles.buttonText}>Sell</Text>
+                    </TouchableOpacity>
+                </View>
+
+
+            {/* Portfolio Section */}
+            <Text style={styles.sectionTitle}>Your Portfolio</Text>
+            <View style={styles.assetsPlaceholder}>
+                {portfolio.length > 0 ? (
+                    <FlatList
+                        data={portfolio}
+                        keyExtractor={(item, index) => `${item.name}-${index}`}
+                        renderItem={({ item }) => (
+                            <Text style={styles.assetsText}>
+                                {item.name}: {item.amount} units
+                            </Text>
+                        )}
+                    />
+                    ) : (
+                        <Text style={styles.assetsText}>You don't own any assets yet.</Text>
+                )}
+            </View>
 
             {/* Show coin data */}
             {coinData.length > 0 ? (
@@ -123,11 +223,15 @@ const SignedInScreen: React.FC<SignedInScreenProps> = ({ route }) => {
                     />
                 )}
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        flexGrow: 1,
+        padding: 20,
+    },
     container: { 
         flex: 1, 
         justifyContent: 'center', 
@@ -144,6 +248,16 @@ const styles = StyleSheet.create({
         fontSize: 18, 
         marginBottom: 20,
         color: '#cfcfcf',
+    },
+    balanceText: {
+        fontSize: 20,
+        marginBottom: 15,
+        color: '#ffffff',
+    },
+    sectionTitle: {
+        fontSize: 20,
+        marginBottom: 10,
+        color: '#00acee',
     },
     input: {  
         width: '80%',
@@ -187,15 +301,23 @@ const styles = StyleSheet.create({
         color: '#ffffff',
     },
     button: {
-        backgroundColor: 'rgba(30, 144, 255, 0.2)',
         padding: 10,
         borderRadius: 5,
-        marginTop: 10,
+        backgroundColor: 'rgba(30, 144, 255, 0.2)',
+        flex: 1,
+        marginHorizontal: 5,
+        alignItems: 'center',
     },
     buttonText: {
         color: '#ffffff',
         textAlign: 'center',
-    }
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '60%',
+        marginVertical: 10,
+    },
 });
 
 export default SignedInScreen;
